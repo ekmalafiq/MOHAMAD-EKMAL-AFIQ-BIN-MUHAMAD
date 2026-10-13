@@ -1,0 +1,6 @@
+{
+  "name": "Unicron DrillBit AI Advisor",
+  "description": "AI-integrated web-based advisory system for oil and gas drill bit selection, operating parameter optimization, IADC dull grading, and hydraulics analysis.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

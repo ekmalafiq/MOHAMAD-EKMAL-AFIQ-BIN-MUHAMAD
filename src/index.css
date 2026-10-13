@@ -1,0 +1,147 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  background-color: #f8fafc;
+  color: #0f172a;
+  transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==========================================================
+   OILFIELD DARK MODE BACKGROUND & COMPONENT ENHANCEMENTS
+   ========================================================== */
+
+/* Main canvas background in dark mode */
+html.dark,
+html.dark body {
+  background-color: #060910 !important;
+  color: #f1f5f9 !important;
+}
+
+/* Cards & Elevated Panels */
+html.dark .bg-white {
+  background-color: #0d1322 !important;
+  color: #f1f5f9;
+}
+
+html.dark .bg-slate-50 {
+  background-color: #090e1a !important;
+  color: #e2e8f0;
+}
+
+html.dark .bg-slate-100 {
+  background-color: #172033 !important;
+  color: #cbd5e1;
+}
+
+html.dark .bg-slate-200,
+html.dark .bg-slate-200\/70 {
+  background-color: #1e293b !important;
+}
+
+/* Borders */
+html.dark .border-slate-200,
+html.dark .border-slate-100 {
+  border-color: #1b263b !important;
+}
+
+html.dark .border-slate-300 {
+  border-color: #2c3a52 !important;
+}
+
+html.dark .border-dashed {
+  border-color: #2c3a52 !important;
+}
+
+/* Text Hierarchy */
+html.dark .text-slate-900 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-slate-800 {
+  color: #e2e8f0 !important;
+}
+
+html.dark .text-slate-700 {
+  color: #cbd5e1 !important;
+}
+
+html.dark .text-slate-600 {
+  color: #94a3b8 !important;
+}
+
+html.dark .text-slate-500 {
+  color: #64748b !important;
+}
+
+/* Inputs, Textareas, Select Dropdowns */
+html.dark input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+html.dark select,
+html.dark textarea {
+  background-color: #090e1a !important;
+  color: #f8fafc !important;
+  border-color: #2c3a52 !important;
+}
+
+html.dark input:not([type="checkbox"]):not([type="radio"]):focus,
+html.dark select:focus,
+html.dark textarea:focus {
+  border-color: #38bdf8 !important;
+  background-color: #0d1322 !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* White button elements in dark mode */
+html.dark button.bg-white {
+  background-color: #172033 !important;
+  color: #f8fafc !important;
+  border-color: #2c3a52 !important;
+}
+
+html.dark button.bg-white:hover {
+  background-color: #1e293b !important;
+}
+
+/* Footer in dark mode */
+html.dark footer {
+  background-color: #05070d !important;
+  border-color: #1b263b !important;
+}
+
+/* Modals & Dialog Backdrops */
+html.dark .fixed .bg-white {
+  background-color: #0d1322 !important;
+  border-color: #1b263b !important;
+}
+
+/* Scrollbars */
+html.dark ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+html.dark ::-webkit-scrollbar-track {
+  background: #090e1a;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
