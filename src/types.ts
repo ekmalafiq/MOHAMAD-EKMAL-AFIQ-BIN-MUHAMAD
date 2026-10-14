@@ -30,6 +30,11 @@ export interface DrillBit {
   sourceFileName?: string;
   allExtractedData?: { key: string; value: string; category?: string }[];
   rawAiSummary?: string;
+  connectionType?: string;
+  cutterCountTotal?: number;
+  faceProfile?: string;
+  hydraulicsTfaSqIn?: number;
+  serialNumber?: string;
 }
 
 export interface FormationPreset {

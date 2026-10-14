@@ -388,14 +388,14 @@ export const UploadBitModal: React.FC<UploadBitModalProps> = ({
             unicronCatalogRef: String(raw.unicronCatalogRef || `U-SPEC-${Math.floor(1000 + Math.random() * 9000)}`),
             allExtractedData: Array.isArray(data.allExtractedData) ? data.allExtractedData : (Array.isArray(raw.allExtractedData) ? raw.allExtractedData : []),
             rawAiSummary: data.rawAiSummary || raw.rawAiSummary || '',
-            imageUrl: imagePreviewUrl || raw.imageUrl || (
+            imageUrl: imagePreviewUrl || (raw.imageUrl?.startsWith('data:') ? raw.imageUrl : (raw.imageUrl || imagePreviewUrl)) || (
               (raw.type === 'PDC_MATRIX' || String(raw.bodyMaterial || '').includes('MATRIX'))
                 ? '/assets/real_pdc_matrix_bit.jpg'
                 : (raw.type === 'ROLLER_CONE_TCI' || raw.type === 'ROLLER_CONE_MILLED')
                 ? '/assets/real_roller_cone_bit.jpg'
                 : '/assets/real_pdc_steel_bit.jpg'
             ),
-            image3dUrl: imagePreviewUrl || raw.image3dUrl || raw.imageUrl || (
+            image3dUrl: imagePreviewUrl || (raw.image3dUrl?.startsWith('data:') ? raw.image3dUrl : (raw.image3dUrl || raw.imageUrl || imagePreviewUrl)) || (
               (raw.type === 'PDC_MATRIX' || String(raw.bodyMaterial || '').includes('MATRIX'))
                 ? '/assets/real_pdc_matrix_bit.jpg'
                 : (raw.type === 'ROLLER_CONE_TCI' || raw.type === 'ROLLER_CONE_MILLED')

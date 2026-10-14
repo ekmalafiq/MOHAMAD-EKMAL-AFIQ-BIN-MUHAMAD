@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { Droplets, CheckCircle, AlertTriangle, ShieldAlert, Plus, Trash2, RotateCcw } from 'lucide-react';
+import { Droplets, CheckCircle, AlertTriangle, ShieldAlert, Plus, Trash2, RotateCcw, ArrowLeft } from 'lucide-react';
 import { DrillBit } from '../types';
 
 interface HydraulicsTabProps {
   activeBit?: DrillBit;
+  onNavigateToAdvisory?: () => void;
 }
 
-export const HydraulicsTab: React.FC<HydraulicsTabProps> = ({ activeBit }) => {
+export const HydraulicsTab: React.FC<HydraulicsTabProps> = ({ activeBit, onNavigateToAdvisory }) => {
   // Hydraulics inputs
   const [flowRateGpm, setFlowRateGpm] = useState<number>(550);
   const [mudWeightPpg, setMudWeightPpg] = useState<number>(10.5);
@@ -91,6 +92,15 @@ export const HydraulicsTab: React.FC<HydraulicsTabProps> = ({ activeBit }) => {
         </div>
 
         <div className="flex items-center space-x-2">
+          {onNavigateToAdvisory && (
+            <button
+              onClick={onNavigateToAdvisory}
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 transition cursor-pointer shadow-xs"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Advisor</span>
+            </button>
+          )}
           <button
             onClick={() => resetPreset('standard')}
             className="px-3 py-1.5 rounded-lg text-xs bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 shadow-2xs cursor-pointer font-medium"

@@ -16,15 +16,11 @@ import { DrillBit } from '../types';
 
 export const MODEL_REAL_PHOTOS: Record<string, string> = {
   // Direct model matching for uploaded photos
-  'UniForce S616': '/assets/real_pdc_steel_bit.jpg',
-  'UniMatrix M613': '/assets/real_pdc_matrix_bit.jpg',
   'UniSpeed S519': '/assets/real_pdc_steel_bit.jpg',
   'UniCone MT-111': '/assets/real_roller_cone_bit.jpg',
   'UniCone TCI-537': '/assets/real_roller_cone_bit.jpg',
   'UniEnlarge SHO-1750': '/assets/real_pdc_matrix_bit.jpg',
   // ID matching
-  'unicron-pdc-s616': '/assets/real_pdc_steel_bit.jpg',
-  'unicron-pdc-m613': '/assets/real_pdc_matrix_bit.jpg',
   'unicron-pdc-s519': '/assets/real_pdc_steel_bit.jpg',
   'unicron-rc-mt-sr': '/assets/real_roller_cone_bit.jpg',
   'unicron-rc-tci-sj': '/assets/real_roller_cone_bit.jpg',
@@ -63,7 +59,7 @@ export const getBitRealPicture = (bit: DrillBit): string => {
     }
   }
 
-  // 2. Direct model-specific resolution for catalog models (UniForce S616, UniMatrix M613, UniSpeed S519, HO S516)
+  // 2. Direct model-specific resolution for catalog models (UniMatrix M613, UniSpeed S519, HO S516)
   if (bit.id && MODEL_REAL_PHOTOS[bit.id]) {
     return MODEL_REAL_PHOTOS[bit.id];
   }
@@ -232,7 +228,7 @@ export const BitVisualizer: React.FC<BitVisualizerProps> = ({
               <div className="flex flex-col items-center justify-center text-center p-4 text-slate-400">
                 <Camera className="w-10 h-10 text-slate-600 mb-2" />
                 <span className="text-xs font-semibold text-slate-300">{bit.model}</span>
-                <span className="text-[10px] text-slate-500 mt-0.5">Tiada imej dimuat naik</span>
+                <span className="text-[10px] text-slate-500 mt-0.5">No photo uploaded</span>
               </div>
             )}
           </div>
@@ -378,7 +374,7 @@ export const BitVisualizer: React.FC<BitVisualizerProps> = ({
                 <div className="flex flex-col items-center justify-center text-center p-6 text-slate-400">
                   <Camera className="w-12 h-12 text-slate-600 mb-2" />
                   <span className="text-sm font-semibold text-slate-200">{bit.model}</span>
-                  <span className="text-xs text-slate-500 mt-1">Tiada imej dimuat naik</span>
+                  <span className="text-xs text-slate-500 mt-1">No photo uploaded</span>
                 </div>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-transparent pointer-events-none" />

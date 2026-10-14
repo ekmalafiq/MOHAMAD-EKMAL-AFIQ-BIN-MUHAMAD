@@ -30,6 +30,11 @@ export interface DrillBit {
   sourceFileName?: string;
   allExtractedData?: { key: string; value: string; category?: string }[];
   rawAiSummary?: string;
+  connectionType?: string;
+  cutterCountTotal?: number;
+  faceProfile?: string;
+  hydraulicsTfaSqIn?: number;
+  serialNumber?: string;
 }
 
 export interface FormationPreset {
@@ -46,202 +51,40 @@ export interface FormationPreset {
   recommendedBitTypes: string[];
 }
 
-export const INITIAL_DRILL_BITS: DrillBit[] = [
-  {
-    id: 'unicron-pdc-s616',
-    model: 'UniForce S616 Steel PDC',
-    manufacturer: 'Unicron Holdings / Exigent Tools',
-    type: 'PDC_STEEL',
-    sizeInch: 8.5,
-    iadcCode: 'S433',
-    bladeCount: 6,
-    cutterSizeMm: 16,
-    bearingType: 'NON_ROLLER',
-    bodyMaterial: 'STEEL',
-    hardfacingGrade: 'High-Density Tungsten Carbide Overcoat',
-    gaugeLengthInch: 2.5,
-    junkSlotAreaPct: 44, // Thin & tall blades leading to high Junk Slot Area (JSA)
-    nozzleCount: 6,
-    nozzleSizes32nds: [12, 12, 12, 14, 14, 14],
-    costUsd: 28500,
-    idealFormations: ['Shale', 'Sandstone', 'Siltstone', 'Claystone'],
-    maxWobKlbf: 35,
-    recommendedWobKlbf: [15, 28],
-    recommendedRpm: [100, 180],
-    recommendedFlowGpm: [450, 600],
-    maxTorqueFtLbs: 9500,
-    description: 'Engineered with high blade standoff and optimized Junk Slot Area (JSA). Maximum body toughness with spiral blade geometry for aggressive ROP in soft to medium formations.',
-    unicronCatalogRef: 'UCH-PDC-850-S616',
-    imageUrl: '/assets/real_pdc_steel_bit.jpg',
-    image3dUrl: '/assets/real_pdc_steel_bit.jpg'
-  },
-  {
-    id: 'unicron-pdc-m613',
-    model: 'UniMatrix M613 Matrix PDC',
-    manufacturer: 'Unicron Holdings / Exigent Tools',
-    type: 'PDC_MATRIX',
-    sizeInch: 8.5,
-    iadcCode: 'M423',
-    bladeCount: 6,
-    cutterSizeMm: 13,
-    bearingType: 'NON_ROLLER',
-    bodyMaterial: 'TUNGSTEN_CARBIDE_MATRIX',
-    hardfacingGrade: 'Full Infiltrated Tungsten Carbide Matrix',
-    gaugeLengthInch: 3.0,
-    junkSlotAreaPct: 36,
-    nozzleCount: 6,
-    nozzleSizes32nds: [11, 11, 12, 12, 13, 13],
-    costUsd: 34000,
-    idealFormations: ['Abrasive Sandstone', 'Carbonates', 'Limestone', 'Interbedded Chert'],
-    maxWobKlbf: 40,
-    recommendedWobKlbf: [18, 32],
-    recommendedRpm: [90, 160],
-    recommendedFlowGpm: [400, 580],
-    maxTorqueFtLbs: 8800,
-    description: 'High abrasion and erosion-resistant tungsten carbide matrix body with impact-resistant polished cutters. Ideal for interbedded formations and high fluid erosion sections.',
-    unicronCatalogRef: 'UCH-PDC-850-M613',
-    imageUrl: '/assets/real_pdc_matrix_bit.jpg',
-    image3dUrl: '/assets/real_pdc_matrix_bit.jpg'
-  },
-  {
-    id: 'unicron-pdc-s519',
-    model: 'UniSpeed S519 Aggressive Steel PDC',
-    manufacturer: 'Unicron Holdings',
-    type: 'PDC_STEEL',
-    sizeInch: 12.25,
-    iadcCode: 'S333',
-    bladeCount: 5,
-    cutterSizeMm: 19,
-    bearingType: 'NON_ROLLER',
-    bodyMaterial: 'STEEL',
-    hardfacingGrade: 'Laser Cladded Carbide Matrix',
-    gaugeLengthInch: 2.0,
-    junkSlotAreaPct: 52,
-    nozzleCount: 7,
-    nozzleSizes32nds: [14, 14, 14, 16, 16, 16, 18],
-    costUsd: 38000,
-    idealFormations: ['Soft Sand', 'Claystone', 'Shallow Marine Clays'],
-    maxWobKlbf: 30,
-    recommendedWobKlbf: [12, 24],
-    recommendedRpm: [110, 190],
-    recommendedFlowGpm: [650, 900],
-    maxTorqueFtLbs: 12000,
-    description: 'Large 19mm cutters with deep junk slots designed for top-hole and intermediate drilling to maximize instantaneous ROP while avoiding bit balling.',
-    unicronCatalogRef: 'UCH-PDC-1225-S519',
-    imageUrl: '/assets/real_pdc_steel_bit.jpg',
-    image3dUrl: '/assets/real_pdc_steel_bit.jpg'
-  },
-  {
-    id: 'unicron-rc-mt-sr',
-    model: 'UniCone MT-111 Sealed Roller Bearing',
-    manufacturer: 'Unicron Holdings',
-    type: 'ROLLER_CONE_MILLED',
-    sizeInch: 12.25,
-    iadcCode: '111',
-    cutterSizeMm: 0,
-    bearingType: 'SEALED_ROLLER',
-    bodyMaterial: 'FORGED_STEEL',
-    hardfacingGrade: 'Tungsten Carbide Tooth Overlay',
-    gaugeLengthInch: 1.5,
-    junkSlotAreaPct: 40,
-    nozzleCount: 3,
-    nozzleSizes32nds: [16, 16, 18],
-    costUsd: 14500,
-    idealFormations: ['Unconsolidated Sands', 'Soft Clay', 'Low Compressive Formations'],
-    maxWobKlbf: 45,
-    recommendedWobKlbf: [15, 30],
-    recommendedRpm: [80, 140],
-    recommendedFlowGpm: [600, 850],
-    maxTorqueFtLbs: 6500,
-    description: 'Milled tooth roller cone bit with sealed roller bearings. Ideal for shallow, low WOB drilling with smooth-rolling design and high-temperature grease for long-lasting reliability.',
-    unicronCatalogRef: 'UCH-RC-1225-MT111',
-    imageUrl: '/assets/real_roller_cone_bit.jpg',
-    image3dUrl: '/assets/real_roller_cone_bit.jpg'
-  },
-  {
-    id: 'unicron-rc-tci-sj',
-    model: 'UniCone TCI-537 Sealed Journal Bearing',
-    manufacturer: 'Unicron Holdings',
-    type: 'ROLLER_CONE_TCI',
-    sizeInch: 8.5,
-    iadcCode: '537',
-    cutterSizeMm: 0,
-    bearingType: 'SEALED_JOURNAL',
-    bodyMaterial: 'FORGED_STEEL',
-    hardfacingGrade: 'Silver-Plated Journal Bushing & Shirttail Inserts',
-    gaugeLengthInch: 2.0,
-    junkSlotAreaPct: 35,
-    nozzleCount: 3,
-    nozzleSizes32nds: [12, 13, 14],
-    costUsd: 19800,
-    idealFormations: ['Hard Limestone', 'Cherty Dolomite', 'Abrasive Hard Sandstone'],
-    maxWobKlbf: 50,
-    recommendedWobKlbf: [25, 45],
-    recommendedRpm: [50, 100],
-    recommendedFlowGpm: [350, 500],
-    maxTorqueFtLbs: 5800,
-    description: 'Sealed journal bearing TCI bit built for high WOB and abrasive, hard formations over extended runs. Features silver-plated bearing surfaces and pressure-compensated grease reservoirs.',
-    unicronCatalogRef: 'UCH-RC-850-TCI537',
-    imageUrl: '/assets/real_roller_cone_bit.jpg',
-    image3dUrl: '/assets/real_roller_cone_bit.jpg'
-  },
-  {
-    id: 'unicron-sho-1750',
-    model: 'UniEnlarge SHO-1750 Stage Hole Opener',
-    manufacturer: 'Unicron Holdings / Exigent',
-    type: 'STAGE_HOLE_OPENER',
-    sizeInch: 17.5,
-    iadcCode: 'SHO-CONE',
-    bearingType: 'SEALED_JOURNAL',
-    bodyMaterial: 'FORGED_STEEL',
-    hardfacingGrade: 'TCI Cutters on Demountable Saddles',
-    gaugeLengthInch: 4.0,
-    junkSlotAreaPct: 48,
-    nozzleCount: 6,
-    nozzleSizes32nds: [14, 14, 16, 16, 18, 18],
-    costUsd: 46000,
-    idealFormations: ['Pre-drilled pilot enlargement', 'Conductor Casing Interval', 'Surface Hole'],
-    maxWobKlbf: 40,
-    recommendedWobKlbf: [15, 30],
-    recommendedRpm: [60, 110],
-    recommendedFlowGpm: [800, 1200],
-    maxTorqueFtLbs: 14000,
-    description: 'Stage Hole Opener (SHO) for enlarging 12.25 pilot holes to 17.5 inch casing pass. Equipped with sealed journal cones, field-replaceable cutter arms, and dedicated jet directed cleaning.',
-    unicronCatalogRef: 'UCH-SHO-1750-PILOT',
-    imageUrl: '/assets/real_pdc_matrix_bit.jpg',
-    image3dUrl: '/assets/real_pdc_matrix_bit.jpg'
-  },
-  {
-    id: 'exigent-sho-s516',
-    model: '8.25 x 12.25 HO S516 (Uploaded Spec Sheet)',
-    manufacturer: 'Exigent Drill Bits',
-    type: 'STAGE_HOLE_OPENER',
-    sizeInch: 12.25,
-    iadcCode: 'S516',
-    bladeCount: 6,
-    cutterSizeMm: 16,
-    bearingType: 'NON_ROLLER',
-    bodyMaterial: 'FORGED_STEEL',
-    hardfacingGrade: 'High-Strength Tungsten Hardfacing Matrix',
-    gaugeLengthInch: 3.0,
-    junkSlotAreaPct: 45,
-    nozzleCount: 6,
-    nozzleSizes32nds: [14, 14, 14, 16, 16, 16],
-    costUsd: 38500,
-    idealFormations: ['Sandstone', 'Shale', 'Limestone', 'Hole Enlargement Interval'],
-    maxWobKlbf: 42,
-    recommendedWobKlbf: [16, 32],
-    recommendedRpm: [70, 140],
-    recommendedFlowGpm: [650, 950],
-    maxTorqueFtLbs: 11500,
-    description: '8.25" x 12.25" Stage Hole Opener (SHO S516) from uploaded technical spec sheet. Heavy duty pilot reaming tool with durable carbide matrix reinforcement.',
-    unicronCatalogRef: 'EXG-SHO-825-1225-S516',
-    imageUrl: undefined,
-    image3dUrl: undefined,
-    isCustomUploaded: true,
-    sourceFileName: '8.25 x12.25 HO S516 Spec Sheet Exigent Drill Bits.pdf'
-  }
-];
+export const DEFAULT_FALLBACK_BIT: DrillBit = {
+  id: 'unicron-fallback',
+  model: 'UniSpeed S519 Standard Steel PDC',
+  manufacturer: 'Unicron Holdings',
+  type: 'PDC_STEEL',
+  sizeInch: 12.25,
+  iadcCode: 'S333',
+  bladeCount: 5,
+  cutterSizeMm: 19,
+  cutterCountTotal: 46,
+  faceProfile: 'Aggressive Parabolic Cone',
+  connectionType: '6-5/8" API Regular Pin',
+  serialNumber: 'UCH-DEFAULT-01',
+  hydraulicsTfaSqIn: 1.288,
+  bearingType: 'NON_ROLLER',
+  bodyMaterial: 'STEEL',
+  hardfacingGrade: 'Carbide Matrix',
+  gaugeLengthInch: 2.0,
+  junkSlotAreaPct: 52,
+  nozzleCount: 7,
+  nozzleSizes32nds: [14, 14, 14, 16, 16, 16, 18],
+  costUsd: 38000,
+  idealFormations: ['Soft Sand', 'Claystone', 'Shallow Marine Clays'],
+  maxWobKlbf: 30,
+  recommendedWobKlbf: [12, 24],
+  recommendedRpm: [110, 190],
+  recommendedFlowGpm: [650, 900],
+  maxTorqueFtLbs: 12000,
+  description: 'Standard steel PDC tool assembly.',
+  unicronCatalogRef: 'UCH-PDC-1225-S519'
+};
+
+// Cleared drill bit items from the catalog data/array
+export const INITIAL_DRILL_BITS: DrillBit[] = [];
 
 export const FORMATION_PRESETS: FormationPreset[] = [
   {
@@ -298,7 +141,7 @@ export const FORMATION_PRESETS: FormationPreset[] = [
   }
 ];
 
-// Initialize catalog fleet populated with uploaded authentic drill bit photographs
+// Initialize catalog fleet as empty array
 export const DRILL_BITS_CATALOG: DrillBit[] = [...INITIAL_DRILL_BITS];
 
 export function addBitToCatalog(bit: DrillBit): DrillBit {

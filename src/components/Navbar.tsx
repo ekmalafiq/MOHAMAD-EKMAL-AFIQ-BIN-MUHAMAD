@@ -10,11 +10,11 @@ import {
   SlidersHorizontal,
   ChevronRight,
   UploadCloud,
-  BookOpen,
   Sun,
   Moon,
   Bot,
-  Sparkles
+  Sparkles,
+  ArrowLeft
 } from 'lucide-react';
 import { UnicronLogo } from './UnicronLogo';
 
@@ -28,8 +28,6 @@ interface NavbarProps {
   onOpenUploadModal?: () => void;
   isDarkMode?: boolean;
   onToggleDarkMode?: (val?: boolean) => void;
-  isCatalogVisible?: boolean;
-  onToggleCatalogVisible?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -42,29 +40,24 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenUploadModal,
   isDarkMode = false,
   onToggleDarkMode,
-  isCatalogVisible = true,
-  onToggleCatalogVisible,
 }) => {
   const engineeringTabs = [
     { id: 'advisory', label: 'AI Bit Advisor', icon: Compass },
+    { id: 'upload', label: 'Drill Bit Upload', icon: UploadCloud },
     { id: 'ai-chat', label: 'Normal AI', icon: Bot, isAi: true },
     { id: 'mse', label: 'MSE & Dynamics', icon: Activity },
     { id: 'hydraulics', label: 'Hydraulics & TFA', icon: Droplets },
     { id: 'dull', label: 'IADC Dull Grading', icon: Layers },
-    { id: 'catalog', label: 'Bit Catalog', icon: BookOpen },
     { id: 'laravel', label: 'Laravel Framework', icon: Code2 },
   ];
 
   const simpleTabs = [
     { id: 'advisory', label: 'Quick Bit Advisor', icon: Zap },
+    { id: 'upload', label: 'Upload Bit File', icon: UploadCloud },
     { id: 'ai-chat', label: 'Normal AI', icon: Bot, isAi: true },
-    { id: 'catalog', label: 'Bit Catalog', icon: BookOpen },
   ];
 
-  const currentTabs = (isSimpleMode ? simpleTabs : engineeringTabs).filter(tab => {
-    if (tab.id === 'catalog' && !isCatalogVisible) return false;
-    return true;
-  });
+  const currentTabs = isSimpleMode ? simpleTabs : engineeringTabs;
 
   return (
     <header className="bg-white border-b border-slate-200 text-slate-800 sticky top-0 z-50 shadow-xs">
@@ -154,17 +147,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span>Upload Bit File</span>
             </button>
           )}
-
-          {!isCatalogVisible && onToggleCatalogVisible && (
-            <button
-              onClick={onToggleCatalogVisible}
-              className="flex items-center space-x-1 px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 rounded-lg text-xs font-semibold shadow-2xs transition cursor-pointer"
-              title="Show Bit Catalog component"
-            >
-              <BookOpen className="w-3.5 h-3.5 text-amber-600" />
-              <span>Show Bit Catalog</span>
-            </button>
-          )}
         </div>
       </div>
 
@@ -197,6 +179,17 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Tab Navigation */}
         <nav className="flex items-center overflow-x-auto space-x-1.5 pb-1 md:pb-0 scrollbar-thin">
+          {activeTab !== 'advisory' && (
+            <button
+              onClick={() => setActiveTab('advisory')}
+              className="flex items-center space-x-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer shrink-0 border border-slate-200 dark:border-slate-700"
+              title="Return to Main Bit Advisor"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+              <span>Back</span>
+            </button>
+          )}
+
           {currentTabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;

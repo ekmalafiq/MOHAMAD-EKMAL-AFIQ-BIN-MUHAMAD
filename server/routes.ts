@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import fs from 'fs';
 import { getGeminiAI } from './gemini.js';
-import { DRILL_BITS_CATALOG, INITIAL_DRILL_BITS, FORMATION_PRESETS, DrillBit, addBitToCatalog, removeBitFromCatalog, updateBitInCatalog, resetDrillBitsCatalog, removeAllBitsFromCatalog } from './drillBitData.js';
+import { DRILL_BITS_CATALOG, INITIAL_DRILL_BITS, DEFAULT_FALLBACK_BIT, FORMATION_PRESETS, DrillBit, addBitToCatalog, removeBitFromCatalog, updateBitInCatalog, resetDrillBitsCatalog, removeAllBitsFromCatalog } from './drillBitData.js';
 import {
   calculateCostPerFoot,
   calculateHydraulics,
@@ -289,13 +289,13 @@ Return ONLY a valid JSON object matching this schema:
     }
 
     if (!extracted) {
-      const isMatrix = fileName && (fileName.toLowerCase().includes('matrix') || fileName.toLowerCase().includes('m613'));
+      const isMatrix = fileName && (fileName.toLowerCase().includes('matrix') || fileName.toLowerCase().includes('viper'));
       extracted = {
-        model: isMatrix ? 'UniMatrix M613 Tungsten Matrix PDC' : 'UniForce S616 Aggressive Steel PDC',
+        model: isMatrix ? 'UniViper M516 Tungsten Matrix PDC' : 'UniSpeed S519 Aggressive Steel PDC',
         manufacturer: 'Unicron Field Engineering Spec',
         type: isMatrix ? 'PDC_MATRIX' : 'PDC_STEEL',
         sizeInch: 8.5,
-        iadcCode: isMatrix ? 'M423' : 'S433',
+        iadcCode: isMatrix ? 'M423' : 'S333',
         bladeCount: 6,
         cutterSizeMm: 16,
         bodyMaterial: isMatrix ? 'TUNGSTEN_CARBIDE_MATRIX' : 'STEEL',
@@ -314,7 +314,7 @@ Return ONLY a valid JSON object matching this schema:
         description: 'Advanced 6-blade drill bit extracted from technical document with optimized cutting structure and hydraulics.',
         rawAiSummary: `Successfully extracted specifications for ${fileName || 'uploaded file'}. Includes full cutter layout, nozzle matrix, operating limits, and formation compatibility.`,
         allExtractedData: [
-          { key: "Model Name", value: isMatrix ? "UniMatrix M613 PDC" : "UniForce S616 PDC", category: "GENERAL" },
+          { key: "Model Name", value: isMatrix ? "UniViper M516 PDC" : "UniSpeed S519 PDC", category: "GENERAL" },
           { key: "Hole Size", value: "8.500 in (215.9 mm)", category: "GENERAL" },
           { key: "IADC Code", value: isMatrix ? "M423" : "S433", category: "GENERAL" },
           { key: "Body Material", value: isMatrix ? "Tungsten Carbide Matrix" : "High-Strength Alloy Steel", category: "METALLURGY" },
@@ -382,13 +382,61 @@ Return ONLY a valid JSON object matching this schema:
     extracted.uploadedAt = new Date().toISOString();
     extracted.sourceFileName = fileName || 'uploaded_spec_sheet';
 
-    // If an image was uploaded directly, preserve it directly on the extracted bit with 100% clarity
-    if (isBase64 && effectiveMime.startsWith('image/')) {
-      const dataUrl = `data:${effectiveMime.split(';')[0]};base64,${fileContent}`;
-      extracted.imageUrl = dataUrl;
-      extracted.image3dUrl = dataUrl;
+    // Helper to extract embedded JPEG images directly from PDF file buffer
+    const extractEmbeddedJpegsFromPdf = (buf: Buffer): string | null => {
+      const candidates: Buffer[] = [];
+      let pos = 0;
+      while (pos < buf.length - 3) {
+        if (buf[pos] === 0xFF && buf[pos+1] === 0xD8 && buf[pos+2] === 0xFF) {
+          const start = pos;
+          let end = -1;
+          for (let j = start + 3; j < buf.length - 1; j++) {
+            if (buf[j] === 0xFF && buf[j+1] === 0xD9) {
+              end = j + 2;
+              break;
+            }
+          }
+          if (end !== -1 && end - start > 4000) {
+            candidates.push(buf.subarray(start, end));
+            pos = end;
+            continue;
+          }
+        }
+        pos++;
+      }
+      if (candidates.length > 0) {
+        candidates.sort((a, b) => b.length - a.length);
+        return `data:image/jpeg;base64,${candidates[0].toString('base64')}`;
+      }
+      return null;
+    };
+
+    // If an image was uploaded directly or embedded in a document/PDF, preserve it with 100% photographic fidelity
+    const isImageFile = (isBase64 && effectiveMime.startsWith('image/')) ||
+      (fileName && /\.(png|jpe?g|webp|bmp|svg|tiff|gif|jfif|heic)$/i.test(fileName));
+
+    let extractedFileImage: string | null = null;
+
+    if (isImageFile && isBase64) {
+      let imgMime = effectiveMime.startsWith('image/') ? effectiveMime.split(';')[0] : 'image/jpeg';
+      if (fileName && fileName.toLowerCase().endsWith('.png')) imgMime = 'image/png';
+      else if (fileName && fileName.toLowerCase().endsWith('.webp')) imgMime = 'image/webp';
+      extractedFileImage = `data:${imgMime};base64,${fileContent}`;
+    } else if (isBase64) {
+      try {
+        const buf = Buffer.from(fileContent, 'base64');
+        extractedFileImage = extractEmbeddedJpegsFromPdf(buf);
+      } catch (e) {
+        console.warn('PDF image extraction skipped:', e);
+      }
+    }
+
+    if (extractedFileImage) {
+      extracted.imageUrl = extractedFileImage;
+      extracted.image3dUrl = extractedFileImage;
+      extracted.hasUploadedFileImage = true;
     } else {
-      // For technical documents (PDF, CSV, LAS), use authentic drill bit photography matching metallurgy and type
+      // For technical documents (PDF, CSV, LAS) with no embedded photo, use authentic drill bit photography matching metallurgy and type
       if (extracted.type === 'PDC_MATRIX' || String(extracted.bodyMaterial || '').includes('MATRIX') || extracted.type === 'STAGE_HOLE_OPENER') {
         extracted.imageUrl = '/assets/real_pdc_matrix_bit.jpg';
         extracted.image3dUrl = '/assets/real_pdc_matrix_bit.jpg';
@@ -599,7 +647,7 @@ apiRouter.post('/advisory/recommend', async (req: Request, res: Response) => {
   const candidatePool = sizeMatches.length > 0 ? sizeMatches : DRILL_BITS_CATALOG;
 
   // Prefer type match, or fallback to first candidate or factory template
-  const fallbackBit: DrillBit = INITIAL_DRILL_BITS[0];
+  const fallbackBit: DrillBit = INITIAL_DRILL_BITS[0] || DEFAULT_FALLBACK_BIT;
   const primaryBit = (candidatePool.length > 0
     ? (candidatePool.find(b => b.type === preferredType) 
        || candidatePool.find(b => b.type.startsWith('PDC') && preferredType.startsWith('PDC'))
@@ -931,7 +979,7 @@ Extract all downhole well parameters and return a valid JSON object matching thi
     const sizeMatches = DRILL_BITS_CATALOG.filter(b => Math.abs(b.sizeInch - bitSizeInch) < 0.25);
     const candidatePool = sizeMatches.length > 0 ? sizeMatches : DRILL_BITS_CATALOG;
 
-    const fallbackBit: DrillBit = INITIAL_DRILL_BITS[0];
+    const fallbackBit: DrillBit = INITIAL_DRILL_BITS[0] || DEFAULT_FALLBACK_BIT;
     const primaryBit = (candidatePool.length > 0
       ? (candidatePool.find(b => b.type === preferredType)
          || candidatePool.find(b => b.type.startsWith('PDC') && preferredType.startsWith('PDC'))
@@ -1290,12 +1338,12 @@ GUIDELINES FOR YOUR RESPONSES:
 
     if (latestUserMsg.includes('bit') || latestUserMsg.includes('recommend') || latestUserMsg.includes('formation')) {
       fallbackReply += `For your target interval, our recommended tool configuration is:\n\n` +
-        `• **Primary Tool:** **UniForce S616 Steel PDC (8-1/2", IADC S433)**\n` +
+        `• **Primary Tool:** **UniSpeed S519 Aggressive Steel PDC (12-1/4", IADC S333)**\n` +
         `• **Recommended Operating Window:**\n` +
         `  - **WOB:** 15 – 28 klbf (Optimum: 22 klbf)\n` +
         `  - **Rotary Speed:** 110 – 160 RPM (Optimum: 135 RPM)\n` +
         `  - **Flow Rate:** 450 – 600 GPM (Maintain HSI > 3.5)\n` +
-        `• **Design Rationale:** Tall spiral blades provide 44% Junk Slot Area (JSA), rapidly evacuating cuttings and mitigating bit balling in hydratable formations. For high compressive strength or interbedded carbonates, switch to **UniMatrix M613** or **UniCone TCI-537**.`;
+        `• **Design Rationale:** Tall spiral blades provide 52% Junk Slot Area (JSA), rapidly evacuating cuttings and mitigating bit balling in hydratable formations. For high compressive strength or interbedded carbonates, switch to **UniCone TCI-537**.`;
     } else if (latestUserMsg.includes('mse') || latestUserMsg.includes('vibration') || latestUserMsg.includes('stick')) {
       fallbackReply += `**Mechanical Specific Energy (MSE) Diagnostic Analysis:**\n\n` +
         `• **Teale's MSE Equation:** $MSE = \\frac{WOB}{A_B} + \\frac{120 \\pi \\cdot RPM \\cdot Torque}{A_B \\cdot ROP}$\n` +
@@ -1369,7 +1417,7 @@ Return ONLY a valid JSON object matching this exact schema:
 {
   "systemSummary": string (SPE-level summary of the scanned assembly and its overall integrity),
   "extractedBit": {
-    "model": string (e.g. "UniForce S616 Steel PDC" or "Titan Matrix M613 PDC"),
+    "model": string (e.g. "UniSpeed S519 Aggressive Steel PDC" or "Titan Matrix M613 PDC"),
     "manufacturer": string (e.g. "Unicron Holdings", "Smith Bits / SLB", "Baker Hughes", "Halliburton", "NOV"),
     "type": "PDC_STEEL" | "PDC_MATRIX" | "ROLLER_CONE_MILLED" | "ROLLER_CONE_TCI" | "STAGE_HOLE_OPENER",
     "sizeInch": number (e.g. 8.5, 12.25, 6.0, 17.5),
@@ -1722,11 +1770,11 @@ Return ONLY a valid JSON object matching this exact schema:
         parsed = {
           systemSummary: 'High-ROP 8-1/2" Steel Body PDC drill bit with 6 spiral blades, aggressive 16mm PDC cutters, deep junk slots, and high-tensile 4145H alloy shank.',
           extractedBit: {
-            model: 'UniForce S616 Aggressive Steel PDC',
+            model: 'UniSpeed S519 Aggressive Steel PDC',
             manufacturer: 'Unicron Holdings',
             type: 'PDC_STEEL',
-            sizeInch: 8.5,
-            iadcCode: 'S433',
+            sizeInch: 12.25,
+            iadcCode: 'S333',
             bladeCount: 6,
             cutterSizeMm: 16,
             bearingType: 'NON_ROLLER',

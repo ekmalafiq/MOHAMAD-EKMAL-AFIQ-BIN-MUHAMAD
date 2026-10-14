@@ -6,11 +6,11 @@ import { HydraulicsTab } from './components/HydraulicsTab';
 import { DullGradingTab } from './components/DullGradingTab';
 import { LaravelTab } from './components/LaravelTab';
 import { AiChatTab } from './components/AiChatTab';
-import { CatalogTab } from './components/CatalogTab';
 import { DrillBit, FormationPreset } from './types';
 import { Flame, ShieldCheck, MapPin, Phone, Mail, Globe, CheckCircle2, X, Bot, Sparkles } from 'lucide-react';
 import { UnicronLogo } from './components/UnicronLogo';
 import { UploadBitModal } from './components/UploadBitModal';
+import { BitUploadTab } from './components/BitUploadTab';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('advisory');
@@ -25,7 +25,6 @@ export default function App() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState<boolean>(false);
   const [uploadToast, setUploadToast] = useState<{ message: string; sub?: string } | null>(null);
   const [isAiDrawerOpen, setIsAiDrawerOpen] = useState<boolean>(false);
-  const [isCatalogTabVisible, setIsCatalogTabVisible] = useState<boolean>(false);
 
   // Normal (Light) vs Dark Mode Background State
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
@@ -123,28 +122,6 @@ export default function App() {
     }
   };
 
-  const handleDeleteBit = async (id: string) => {
-    try {
-      const res = await fetch(`/api/bits/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        const deletedBit = catalog.find((b) => b.id === id);
-        const remaining = catalog.filter((b) => b.id !== id);
-        setCatalog(remaining);
-        if (activeBit?.id === id) {
-          if (remaining.length > 0) setActiveBit(remaining[0]);
-          else setActiveBit(undefined);
-        }
-        setUploadToast({
-          message: 'Drill Bit Removed from Catalog',
-          sub: `"${deletedBit?.model || id}" has been deleted.`
-        });
-        setTimeout(() => setUploadToast(null), 3000);
-      }
-    } catch (e) {
-      console.error('Failed to delete drill bit:', e);
-    }
-  };
-
   const handleBitUploaded = (newBits: DrillBit[]) => {
     setCatalog((prev) => {
       const incomingIds = new Set(newBits.map(b => b.id));
@@ -162,40 +139,22 @@ export default function App() {
     }
   };
 
-  const handleResetCatalog = async () => {
-    try {
-      const res = await fetch('/api/bits/reset', { method: 'POST' });
-      const data = await res.json();
-      if (data.bits) {
-        setCatalog(data.bits);
-        if (data.bits.length > 0) {
-          setActiveBit(data.bits[0]);
-        }
-        setUploadToast({
-          message: 'Catalog reset to factory specifications',
-          sub: 'Factory Unicron tooling restored.'
-        });
-        setTimeout(() => setUploadToast(null), 4000);
-      }
-    } catch (e) {
-      console.error('Failed to reset catalog:', e);
+  const handleDeleteBit = async (id: string) => {
+    setCatalog((prev) => prev.filter((b) => b.id !== id));
+    if (activeBit?.id === id) {
+      const remaining = catalog.filter((b) => b.id !== id);
+      setActiveBit(remaining[0] || undefined);
     }
-  };
+    setUploadToast({
+      message: 'Drill Bit Removed',
+      sub: 'The drill bit specification was removed from the fleet.'
+    });
+    setTimeout(() => setUploadToast(null), 3500);
 
-  const handleRemoveAllBits = async () => {
     try {
-      const res = await fetch('/api/bits', { method: 'DELETE' });
-      if (res.ok) {
-        setCatalog([]);
-        setActiveBit(undefined);
-        setUploadToast({
-          message: 'All Bit Catalog Components Deleted',
-          sub: 'The catalog fleet has been cleared (0 items). You can upload custom drill bits anytime.'
-        });
-        setTimeout(() => setUploadToast(null), 4000);
-      }
+      await fetch(`/api/bits/${id}`, { method: 'DELETE' });
     } catch (e) {
-      console.error('Failed to clear catalog:', e);
+      console.warn('Backend delete failed, updated client cache:', e);
     }
   };
 
@@ -240,22 +199,34 @@ export default function App() {
         onToggleDarkMode={(val) => {
           setIsDarkMode(prev => (val !== undefined ? val : !prev));
         }}
-        isCatalogVisible={isCatalogTabVisible}
-        onToggleCatalogVisible={() => {
-          setIsCatalogTabVisible(prev => {
-            const next = !prev;
-            if (!next && activeTab === 'catalog') {
-              setActiveTab('advisory');
-            } else if (next) {
-              setActiveTab('catalog');
-            }
-            return next;
-          });
-        }}
       />
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
+        {activeTab === 'upload' && (
+          <BitUploadTab
+            catalog={catalog}
+            activeBit={activeBit}
+            onSelectBit={(bit) => {
+              setActiveBit(bit);
+              setUploadToast({
+                message: 'Active Drill Bit Updated',
+                sub: `"${bit.model}" (${bit.sizeInch}") is now active across all engineering modules.`
+              });
+              setTimeout(() => setUploadToast(null), 4000);
+            }}
+            onAddBit={(bit) => handleBitUploaded([bit])}
+            onUpdateBit={handleUpdateBit}
+            onDeleteBit={handleDeleteBit}
+            onNavigateToAdvisory={() => setActiveTab('advisory')}
+            onNavigateToMse={(bit) => handleSelectBitForMse(bit, mseWob, mseRpm)}
+            onNavigateToHydraulics={(bit) => {
+              setActiveBit(bit);
+              setActiveTab('hydraulics');
+            }}
+          />
+        )}
+
         {activeTab === 'advisory' && (
           <BitAdvisoryTab
             catalog={catalog}
@@ -263,13 +234,10 @@ export default function App() {
             isSimpleMode={isSimpleMode}
             setIsSimpleMode={setIsSimpleMode}
             onOpenUploadModal={() => setIsUploadModalOpen(true)}
+            onNavigateToUpload={() => setActiveTab('upload')}
             onSelectBitForMse={handleSelectBitForMse}
             onNavigateToHydraulics={() => setActiveTab('hydraulics')}
             onNavigateToAiChat={() => setActiveTab('ai-chat')}
-            onNavigateToCatalog={() => {
-              setIsCatalogTabVisible(true);
-              setActiveTab('catalog');
-            }}
             activeBit={activeBit}
             onSetActiveBit={(bit) => setActiveBit(bit)}
             onAddBit={(bit) => handleBitUploaded([bit])}
@@ -283,6 +251,7 @@ export default function App() {
             onSelectBit={handleSelectBitFromCatalog}
             rigType={rigType}
             formationPresets={formationPresets}
+            onNavigateToAdvisory={() => setActiveTab('advisory')}
           />
         )}
 
@@ -291,43 +260,27 @@ export default function App() {
             activeBit={activeBit}
             initialWob={mseWob}
             initialRpm={mseRpm}
+            onNavigateToAdvisory={() => setActiveTab('advisory')}
           />
         )}
 
         {activeTab === 'hydraulics' && (
-          <HydraulicsTab activeBit={activeBit} />
+          <HydraulicsTab 
+            activeBit={activeBit} 
+            onNavigateToAdvisory={() => setActiveTab('advisory')}
+          />
         )}
 
         {activeTab === 'dull' && (
-          <DullGradingTab />
-        )}
-
-        {activeTab === 'catalog' && (
-          <CatalogTab
-            catalog={catalog}
-            activeBit={activeBit}
-            onSelectBit={handleSelectBitFromCatalog}
-            onOpenUploadModal={() => setIsUploadModalOpen(true)}
-            onResetCatalog={handleResetCatalog}
-            onDeleteBit={handleDeleteBit}
-            onRemoveAllBits={handleRemoveAllBits}
-            onUpdateBit={handleUpdateBit}
-            onAddBit={(bit) => handleBitUploaded([bit])}
+          <DullGradingTab 
             onNavigateToAdvisory={() => setActiveTab('advisory')}
-            onCloseCatalog={() => {
-              setIsCatalogTabVisible(false);
-              setActiveTab('advisory');
-              setUploadToast({
-                message: 'Bit Catalog Component Closed',
-                sub: 'You can restore or show the Bit Catalog anytime from the top bar.'
-              });
-              setTimeout(() => setUploadToast(null), 4000);
-            }}
           />
         )}
 
         {activeTab === 'laravel' && (
-          <LaravelTab />
+          <LaravelTab 
+            onNavigateToAdvisory={() => setActiveTab('advisory')}
+          />
         )}
       </main>
 

@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
-import { Layers, AlertTriangle, ShieldCheck, HelpCircle, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Layers, AlertTriangle, ShieldCheck, HelpCircle, CheckCircle2, ArrowRight, ArrowLeft } from 'lucide-react';
 import { DullGradingResult } from '../types';
 
-export const DullGradingTab: React.FC = () => {
+interface DullGradingTabProps {
+  onNavigateToAdvisory?: () => void;
+}
+
+export const DullGradingTab: React.FC<DullGradingTabProps> = ({ onNavigateToAdvisory }) => {
   // 8-Point IADC Inputs
   const [innerCutters, setInnerCutters] = useState<number>(2);
   const [outerCutters, setOuterCutters] = useState<number>(3);
@@ -20,7 +24,7 @@ export const DullGradingTab: React.FC = () => {
     wearMechanism: 'Moderate cyclic impact and thermal stress micro-fracturing on shoulder cutters.',
     rootCause: 'Hard chert/pyrite inclusions or excessive rotary speed inducing cutter tip temperature spikes >750°C during transitions.',
     recommendedMitigation: 'Limit maximum rotary speed to 120 RPM when passing interbedded stringers, ensure mud lubricity is maintained, and monitor real-time MSE.',
-    nextBitModification: 'Specify Unicron UniMatrix M613 with chamfered dual-radius diamond cutters and thermally stable polycrystalline diamond (TSP).'
+    nextBitModification: 'Specify advanced chamfered dual-radius diamond cutters and thermally stable polycrystalline diamond (TSP).'
   });
 
   const runAnalysis = async () => {
@@ -109,6 +113,15 @@ export const DullGradingTab: React.FC = () => {
         </div>
 
         <div className="flex items-center space-x-2">
+          {onNavigateToAdvisory && (
+            <button
+              onClick={onNavigateToAdvisory}
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 transition cursor-pointer shadow-xs"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Advisor</span>
+            </button>
+          )}
           <button
             onClick={() => setPresetGrade('normal')}
             className="px-2.5 py-1.5 rounded-lg text-xs bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 shadow-2xs cursor-pointer font-medium"

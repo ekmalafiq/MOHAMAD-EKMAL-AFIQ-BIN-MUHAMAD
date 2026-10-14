@@ -410,9 +410,9 @@ class OptimizeBitRunCommand extends Command
         $this->table(
             ['Parameter', 'Recommendation'],
             [
-                ['Model', $primary->model ?? 'UniForce S616'],
+                ['Model', $primary->model ?? 'UniSpeed S519'],
                 ['Type', $primary->type ?? 'PDC Steel Body'],
-                ['IADC Code', $primary->iadc_code ?? 'S433'],
+                ['IADC Code', $primary->iadc_code ?? 'S333'],
                 ['WOB Range', "{$result['recommended_envelope']['wob_min_klbf']} - {$result['recommended_envelope']['wob_max_klbf']} klbf"],
                 ['RPM Range', "{$result['recommended_envelope']['rpm_min']} - {$result['recommended_envelope']['rpm_max']} RPM"],
                 ['Target HSI', "{$result['recommended_envelope']['target_hsi']} HHP/in²"],

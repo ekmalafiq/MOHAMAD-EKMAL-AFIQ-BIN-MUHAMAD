@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Code2, Download, Copy, Check, FileCode, Folder, Terminal, Sparkles, Server } from 'lucide-react';
+import { Code2, Download, Copy, Check, FileCode, Folder, Terminal, Sparkles, Server, ArrowLeft } from 'lucide-react';
 
 interface LaravelFile {
   path: string;
@@ -8,7 +8,11 @@ interface LaravelFile {
   code: string;
 }
 
-export const LaravelTab: React.FC = () => {
+interface LaravelTabProps {
+  onNavigateToAdvisory?: () => void;
+}
+
+export const LaravelTab: React.FC<LaravelTabProps> = ({ onNavigateToAdvisory }) => {
   const [files, setFiles] = useState<LaravelFile[]>([]);
   const [selectedFilePath, setSelectedFilePath] = useState<string>('app/Http/Controllers/DrillBitAdvisoryController.php');
   const [copied, setCopied] = useState<boolean>(false);
@@ -61,6 +65,16 @@ export const LaravelTab: React.FC = () => {
         </div>
 
         <div className="flex items-center space-x-2">
+          {onNavigateToAdvisory && (
+            <button
+              onClick={onNavigateToAdvisory}
+              className="flex items-center space-x-1.5 px-3.5 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs border border-slate-300 shadow-xs transition cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back to Advisor</span>
+            </button>
+          )}
+
           <button
             onClick={handleDownloadZip}
             className="flex items-center space-x-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white font-semibold text-xs shadow-md shadow-rose-600/20 transition cursor-pointer"

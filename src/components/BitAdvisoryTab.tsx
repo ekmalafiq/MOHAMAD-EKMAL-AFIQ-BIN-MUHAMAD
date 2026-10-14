@@ -34,8 +34,7 @@ import {
   FileCheck,
   RefreshCw,
   FileCode,
-  File,
-  BookOpen
+  File
 } from 'lucide-react';
 import { DrillBit, FormationPreset, AdvisoryRecommendation } from '../types';
 import { BitVisualizer } from './BitVisualizer';
@@ -47,10 +46,10 @@ interface BitAdvisoryTabProps {
   isSimpleMode?: boolean;
   setIsSimpleMode?: (val: boolean) => void;
   onOpenUploadModal?: () => void;
+  onNavigateToUpload?: () => void;
   onSelectBitForMse?: (bit: DrillBit, wob: number, rpm: number) => void;
   onNavigateToHydraulics?: () => void;
   onNavigateToAiChat?: () => void;
-  onNavigateToCatalog?: () => void;
   activeBit?: DrillBit;
   onSetActiveBit?: (bit: DrillBit) => void;
   onAddBit?: (bit: DrillBit) => void;
@@ -62,10 +61,10 @@ export const BitAdvisoryTab: React.FC<BitAdvisoryTabProps> = ({
   isSimpleMode = true,
   setIsSimpleMode,
   onOpenUploadModal,
+  onNavigateToUpload,
   onSelectBitForMse,
   onNavigateToHydraulics,
   onNavigateToAiChat,
-  onNavigateToCatalog,
   activeBit,
   onSetActiveBit,
   onAddBit
@@ -232,30 +231,30 @@ export const BitAdvisoryTab: React.FC<BitAdvisoryTabProps> = ({
       
       // Fallback local resolution
       const defaultFallbackBit: DrillBit = {
-        id: 'default-fallback-bit',
-        model: 'UniMatrix M613',
+        id: 'unicron-pdc-s519',
+        model: 'UniSpeed S519 Aggressive Steel PDC',
         manufacturer: 'Unicron Holdings',
-        type: 'PDC_MATRIX',
-        sizeInch: activeSize || 8.5,
-        iadcCode: 'M323',
-        bladeCount: 6,
-        cutterSizeMm: 16,
+        type: 'PDC_STEEL',
+        sizeInch: activeSize || 12.25,
+        iadcCode: 'S333',
+        bladeCount: 5,
+        cutterSizeMm: 19,
         bearingType: 'NON_ROLLER',
-        bodyMaterial: 'TUNGSTEN_CARBIDE_MATRIX',
-        hardfacingGrade: 'Tungsten Carbide Matrix',
-        gaugeLengthInch: 2.5,
-        junkSlotAreaPct: 40,
-        nozzleCount: 6,
-        nozzleSizes32nds: [12, 12, 12, 14, 14, 14],
-        costUsd: 28000,
-        idealFormations: ['Sandstone', 'Marine Shale'],
-        maxWobKlbf: 35,
-        recommendedWobKlbf: [15, 30],
-        recommendedRpm: [110, 160],
-        recommendedFlowGpm: [450, 600],
-        maxTorqueFtLbs: 12500,
-        description: 'Standard 6-blade tungsten carbide matrix PDC bit.',
-        unicronCatalogRef: 'U-M613-85'
+        bodyMaterial: 'STEEL',
+        hardfacingGrade: 'Laser Cladded Carbide Matrix',
+        gaugeLengthInch: 2.0,
+        junkSlotAreaPct: 52,
+        nozzleCount: 7,
+        nozzleSizes32nds: [14, 14, 14, 16, 16, 16, 18],
+        costUsd: 38000,
+        idealFormations: ['Soft Sand', 'Claystone', 'Shallow Marine Clays'],
+        maxWobKlbf: 30,
+        recommendedWobKlbf: [12, 24],
+        recommendedRpm: [110, 190],
+        recommendedFlowGpm: [650, 900],
+        maxTorqueFtLbs: 12000,
+        description: 'Large 19mm cutters with deep junk slots designed to maximize instantaneous ROP.',
+        unicronCatalogRef: 'UCH-PDC-1225-S519'
       };
 
       const matched = catalog.find(b => Math.abs(b.sizeInch - activeSize) < 0.25) || catalog[0] || defaultFallbackBit;
@@ -444,10 +443,10 @@ export const BitAdvisoryTab: React.FC<BitAdvisoryTabProps> = ({
       };
     } else if (type === 'unimatrix_ai') {
       sample = {
-        name: 'UniMatrix_M613_CAD_Blueprint.ai',
+        name: 'UniSpeed_S519_CAD_Blueprint.ai',
         size: 1840000,
         type: 'application/illustrator',
-        content: '%PDF-1.5 %Adobe-Illustrator-Spec: UniMatrix M613 Tungsten Carbide Matrix PDC 8.5 inch 6-blade spiral cutter layout 16mm polished cutters 42% JSA nozzles 3x12 3x14/32 inch for abrasive interbedded sandstone and marine shale',
+        content: '%PDF-1.5 %Adobe-Illustrator-Spec: UniSpeed S519 Aggressive Steel PDC 12.25 inch 5-blade spiral cutter layout 19mm polished cutters 52% JSA nozzles 3x14 3x16 1x18/32 inch for high ROP in shale and sand',
         isBase64: false
       };
     } else {
@@ -572,26 +571,20 @@ PETRONAS Licensed Tooling - Unicron Holdings KSB/ASB`;
 
         <div className="flex items-center space-x-2.5 self-start lg:self-auto shrink-0">
           {/* Upload Drill Bit File button */}
-          {onOpenUploadModal && (
+          {(onNavigateToUpload || onOpenUploadModal) && (
             <button
-              onClick={onOpenUploadModal}
+              onClick={() => {
+                if (onNavigateToUpload) {
+                  onNavigateToUpload();
+                } else if (onOpenUploadModal) {
+                  onOpenUploadModal();
+                }
+              }}
               className="flex items-center space-x-1.5 px-3 py-2 rounded-xl border border-sky-200 bg-sky-50 hover:bg-sky-100 text-sky-800 text-xs font-semibold shadow-2xs transition cursor-pointer"
               title="Upload custom drill bit file"
             >
               <UploadCloud className="w-3.5 h-3.5 text-sky-600" />
               <span>Upload Bit File</span>
-            </button>
-          )}
-
-          {/* Browse Bit Catalog button */}
-          {onNavigateToCatalog && (
-            <button
-              onClick={onNavigateToCatalog}
-              className="flex items-center space-x-1.5 px-3 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold shadow-2xs transition cursor-pointer"
-              title="Browse drill bit catalog"
-            >
-              <BookOpen className="w-3.5 h-3.5 text-slate-600" />
-              <span>Bit Catalog</span>
             </button>
           )}
 
@@ -826,7 +819,7 @@ PETRONAS Licensed Tooling - Unicron Holdings KSB/ASB`;
                         className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium transition cursor-pointer shadow-2xs"
                       >
                         <FileCode className="w-3.5 h-3.5 text-amber-600" />
-                        <span>UniMatrix M613 CAD Spec (.ai)</span>
+                        <span>UniSpeed S519 CAD Spec (.ai)</span>
                       </button>
                       <button
                         type="button"
@@ -1279,15 +1272,6 @@ PETRONAS Licensed Tooling - Unicron Holdings KSB/ASB`;
                 </div>
 
                 <div className="flex items-center space-x-3">
-                  {onNavigateToCatalog && (
-                    <button
-                      onClick={onNavigateToCatalog}
-                      className="text-sky-700 hover:text-sky-900 font-semibold flex items-center gap-1 cursor-pointer"
-                    >
-                      <BookOpen className="w-3.5 h-3.5" />
-                      <span>Browse Bit Catalog &rarr;</span>
-                    </button>
-                  )}
                   {setIsSimpleMode && (
                     <button
                       onClick={() => setIsSimpleMode(false)}

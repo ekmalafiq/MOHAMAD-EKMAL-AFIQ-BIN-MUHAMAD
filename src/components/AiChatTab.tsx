@@ -20,7 +20,8 @@ import {
   DollarSign, 
   HelpCircle,
   ChevronDown,
-  Info
+  Info,
+  ArrowLeft
 } from 'lucide-react';
 import { DrillBit, FormationPreset } from '../types';
 
@@ -41,6 +42,7 @@ interface AiChatTabProps {
   formationPresets?: FormationPreset[];
   isDrawerMode?: boolean;
   onCloseDrawer?: () => void;
+  onNavigateToAdvisory?: () => void;
 }
 
 export const AiChatTab: React.FC<AiChatTabProps> = ({
@@ -50,7 +52,8 @@ export const AiChatTab: React.FC<AiChatTabProps> = ({
   rigType = 'Jackup Rig (Offshore Malaysia)',
   formationPresets = [],
   isDrawerMode = false,
-  onCloseDrawer
+  onCloseDrawer,
+  onNavigateToAdvisory
 }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -202,7 +205,7 @@ export const AiChatTab: React.FC<AiChatTabProps> = ({
     },
     {
       title: 'Ask Any Question',
-      prompt: 'Compare Tungsten Carbide Matrix body (UniMatrix M613) vs Steel body (UniForce S616) for interbedded sandstone with chert nodules.',
+      prompt: 'Compare Tungsten Carbide Matrix body vs Steel body (UniSpeed S519) for interbedded sandstone with chert nodules.',
       icon: Activity
     }
   ];
@@ -235,6 +238,17 @@ export const AiChatTab: React.FC<AiChatTabProps> = ({
 
         {/* Model & Persona Selectors */}
         <div className="flex flex-wrap items-center gap-2">
+          {!isDrawerMode && onNavigateToAdvisory && (
+            <button
+              type="button"
+              onClick={onNavigateToAdvisory}
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs border border-slate-200 dark:border-slate-700 transition cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Advisor</span>
+            </button>
+          )}
+
           {/* Persona Selector */}
           <div className="flex items-center bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 px-2 py-1 text-xs">
             <Wrench className="w-3.5 h-3.5 text-slate-400 mr-1.5" />

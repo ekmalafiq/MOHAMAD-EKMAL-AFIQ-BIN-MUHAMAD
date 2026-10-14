@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Activity, AlertOctagon, CheckCircle, Zap, Shield, Play, Pause, RefreshCw } from 'lucide-react';
+import { Activity, AlertOctagon, CheckCircle, Zap, Shield, Play, Pause, RefreshCw, ArrowLeft } from 'lucide-react';
 import { DrillBit } from '../types';
 
 interface MseDiagnosticsTabProps {
   activeBit?: DrillBit;
   initialWob?: number;
   initialRpm?: number;
+  onNavigateToAdvisory?: () => void;
 }
 
 export const MseDiagnosticsTab: React.FC<MseDiagnosticsTabProps> = ({
   activeBit,
   initialWob = 22,
-  initialRpm = 135
+  initialRpm = 135,
+  onNavigateToAdvisory
 }) => {
   // Telemetry Inputs
   const [wobKlbf, setWobKlbf] = useState<number>(initialWob);
@@ -120,6 +122,16 @@ export const MseDiagnosticsTab: React.FC<MseDiagnosticsTabProps> = ({
         </div>
 
         <div className="flex items-center space-x-2">
+          {onNavigateToAdvisory && (
+            <button
+              onClick={onNavigateToAdvisory}
+              className="flex items-center space-x-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 transition cursor-pointer shadow-xs"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Advisor</span>
+            </button>
+          )}
+
           <button
             onClick={() => setIsSimulating(!isSimulating)}
             className={`flex items-center space-x-1.5 px-4 py-2 rounded-lg text-xs font-semibold border transition cursor-pointer shadow-xs ${

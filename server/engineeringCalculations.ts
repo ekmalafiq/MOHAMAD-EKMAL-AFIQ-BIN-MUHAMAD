@@ -256,7 +256,7 @@ export function analyzeIadcDullGrade(input: IadcDullGradingInput): DullGradingAn
       wearMechanism = 'High impact dynamic shock loading';
       rootCause = 'Interbedded hard stringers or lateral vibration (drill bit whirl) causing shock fracture of diamond table';
       mitigation = 'Reduce RPM when tagging stringers, increase WOB cautiously to anchor bit, and engage Depth of Cut Control (DOCC)';
-      nextBitModification = 'Select matrix body with enhanced cutter impact toughness (e.g. Unicron UniMatrix M613) and secondary backup cutters';
+      nextBitModification = 'Select cutter structure with enhanced impact toughness and secondary backup cutters';
       break;
     case 'CT': // Chipped Teeth
       wearMechanism = 'Moderate cyclic impact and thermal stress micro-fracturing';
