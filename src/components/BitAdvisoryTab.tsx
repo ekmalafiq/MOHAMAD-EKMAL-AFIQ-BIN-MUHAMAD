@@ -492,12 +492,10 @@ export const BitAdvisoryTab: React.FC<BitAdvisoryTabProps> = ({
     }
   };
 
-  // Run on initial load
+  // Do not automatically run mock advisory on initial mount to keep the screen clean until user requests it
   useEffect(() => {
-    if (!advisoryResult && catalog.length > 0) {
-      runAdvisoryAnalysis();
-    }
-  }, [catalog]);
+    // Keep empty on initial mount so user can initiate AI analysis or upload files cleanly
+  }, []);
 
   // Handle Simple Selection updates
   const handleSimpleSizeSelect = (size: number) => {
@@ -1128,6 +1126,20 @@ PETRONAS Licensed Tooling - Unicron Holdings KSB/ASB`;
                   >
                     <Mail className="w-3.5 h-3.5 text-white" />
                     <span>Request Quotation</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAdvisoryResult(null);
+                      setFileAnalysisSuccess(false);
+                      setUploadedFile(null);
+                    }}
+                    className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-rose-950/50 dark:hover:text-rose-300 border border-slate-200 dark:border-slate-700 hover:border-rose-300 dark:hover:border-rose-800 text-xs font-semibold transition cursor-pointer"
+                    title="Remove and dismiss this recommendation card"
+                  >
+                    <X className="w-3.5 h-3.5 text-slate-500 hover:text-rose-600" />
+                    <span>Remove</span>
                   </button>
                 </div>
               </div>

@@ -390,17 +390,17 @@ export const UploadBitModal: React.FC<UploadBitModalProps> = ({
             rawAiSummary: data.rawAiSummary || raw.rawAiSummary || '',
             imageUrl: imagePreviewUrl || raw.imageUrl || (
               (raw.type === 'PDC_MATRIX' || String(raw.bodyMaterial || '').includes('MATRIX'))
-                ? '/src/assets/images/real_pdc_matrix_bit_1791528149452.jpg'
+                ? '/assets/real_pdc_matrix_bit.jpg'
                 : (raw.type === 'ROLLER_CONE_TCI' || raw.type === 'ROLLER_CONE_MILLED')
-                ? '/src/assets/images/real_roller_cone_bit_1791528221135.jpg'
-                : '/src/assets/images/real_pdc_steel_bit_1791528122922.jpg'
+                ? '/assets/real_roller_cone_bit.jpg'
+                : '/assets/real_pdc_steel_bit.jpg'
             ),
             image3dUrl: imagePreviewUrl || raw.image3dUrl || raw.imageUrl || (
               (raw.type === 'PDC_MATRIX' || String(raw.bodyMaterial || '').includes('MATRIX'))
-                ? '/src/assets/images/real_pdc_matrix_bit_1791528149452.jpg'
+                ? '/assets/real_pdc_matrix_bit.jpg'
                 : (raw.type === 'ROLLER_CONE_TCI' || raw.type === 'ROLLER_CONE_MILLED')
-                ? '/src/assets/images/real_roller_cone_bit_1791528221135.jpg'
-                : '/src/assets/images/real_pdc_steel_bit_1791528122922.jpg'
+                ? '/assets/real_roller_cone_bit.jpg'
+                : '/assets/real_pdc_steel_bit.jpg'
             ),
             sourceFileName: file.name,
             isCustomUploaded: true,
@@ -789,7 +789,7 @@ export const UploadBitModal: React.FC<UploadBitModalProps> = ({
                     <div className="flex flex-col sm:flex-row items-center gap-3 bg-white p-3 rounded-xl border border-slate-200">
                       <div className="w-20 h-20 bg-slate-950 rounded-lg p-1.5 border border-slate-800 flex items-center justify-center shrink-0">
                         <img 
-                          src={bit.imageUrl || bit.image3dUrl || '/src/assets/images/real_pdc_steel_bit_1791528122922.jpg'} 
+                          src={bit.imageUrl || bit.image3dUrl || '/assets/real_pdc_steel_bit.jpg'} 
                           alt={bit.model}
                           className="w-full h-full object-contain drop-shadow select-none"
                         />

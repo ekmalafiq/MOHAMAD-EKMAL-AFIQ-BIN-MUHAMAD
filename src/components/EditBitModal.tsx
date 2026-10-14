@@ -26,9 +26,9 @@ interface EditBitModalProps {
 }
 
 const PRESET_IMAGE_OPTIONS = [
-  { label: 'PDC Matrix Body (Dark Tungsten)', url: '/src/assets/images/pdc_matrix_bit_1791181649542.jpg' },
-  { label: 'PDC Steel Body (Machined Gold/Steel)', url: '/src/assets/images/pdc_steel_bit_1791181662147.jpg' },
-  { label: 'Roller Cone TCI / Milled (Tri-Cone)', url: '/src/assets/images/roller_cone_bit_1791181672595.jpg' },
+  { label: 'PDC Steel Body (Real Photo Specimen)', url: '/assets/real_pdc_steel_bit.jpg' },
+  { label: 'PDC Matrix Body (Real Photo Specimen)', url: '/assets/real_pdc_matrix_bit.jpg' },
+  { label: 'Roller Cone TCI / Milled (Real Photo Specimen)', url: '/assets/real_roller_cone_bit.jpg' },
 ];
 
 export const EditBitModal: React.FC<EditBitModalProps> = ({

@@ -382,22 +382,22 @@ Return ONLY a valid JSON object matching this schema:
     extracted.uploadedAt = new Date().toISOString();
     extracted.sourceFileName = fileName || 'uploaded_spec_sheet';
 
-    // If an image was uploaded, preserve it directly on the extracted bit with 100% clarity
+    // If an image was uploaded directly, preserve it directly on the extracted bit with 100% clarity
     if (isBase64 && effectiveMime.startsWith('image/')) {
       const dataUrl = `data:${effectiveMime.split(';')[0]};base64,${fileContent}`;
       extracted.imageUrl = dataUrl;
       extracted.image3dUrl = dataUrl;
-    } else if (!extracted.imageUrl) {
-      // Use real authentic drill bit photography matching metallurgy and type (not 3D renders)
-      if (extracted.type === 'PDC_MATRIX' || String(extracted.bodyMaterial || '').includes('MATRIX')) {
-        extracted.imageUrl = '/src/assets/images/real_pdc_matrix_bit_1791528149452.jpg';
-        extracted.image3dUrl = '/src/assets/images/real_pdc_matrix_bit_1791528149452.jpg';
+    } else {
+      // For technical documents (PDF, CSV, LAS), use authentic drill bit photography matching metallurgy and type
+      if (extracted.type === 'PDC_MATRIX' || String(extracted.bodyMaterial || '').includes('MATRIX') || extracted.type === 'STAGE_HOLE_OPENER') {
+        extracted.imageUrl = '/assets/real_pdc_matrix_bit.jpg';
+        extracted.image3dUrl = '/assets/real_pdc_matrix_bit.jpg';
       } else if (extracted.type === 'ROLLER_CONE_TCI' || extracted.type === 'ROLLER_CONE_MILLED') {
-        extracted.imageUrl = '/src/assets/images/real_roller_cone_bit_1791528221135.jpg';
-        extracted.image3dUrl = '/src/assets/images/real_roller_cone_bit_1791528221135.jpg';
+        extracted.imageUrl = '/assets/real_roller_cone_bit.jpg';
+        extracted.image3dUrl = '/assets/real_roller_cone_bit.jpg';
       } else {
-        extracted.imageUrl = '/src/assets/images/real_pdc_steel_bit_1791528122922.jpg';
-        extracted.image3dUrl = '/src/assets/images/real_pdc_steel_bit_1791528122922.jpg';
+        extracted.imageUrl = '/assets/real_pdc_steel_bit.jpg';
+        extracted.image3dUrl = '/assets/real_pdc_steel_bit.jpg';
       }
     }
 
@@ -1332,10 +1332,10 @@ apiRouter.post('/ai/scan-image', async (req: Request, res: Response) => {
     // Support loading server-side demo image if sampleId provided
     if (sampleId && !imageBase64) {
       const sampleMap: Record<string, string> = {
-        'pdc-steel': './src/assets/images/real_pdc_steel_bit_1791528122922.jpg',
-        'pdc-matrix': './src/assets/images/real_pdc_matrix_bit_1791528149452.jpg',
-        'roller-cone': './src/assets/images/real_roller_cone_bit_1791528221135.jpg',
-        'pdc-real': './src/assets/images/real_pdc_steel_bit_1791528122922.jpg'
+        'pdc-steel': './public/assets/real_pdc_steel_bit.jpg',
+        'pdc-matrix': './public/assets/real_pdc_matrix_bit.jpg',
+        'roller-cone': './public/assets/real_roller_cone_bit.jpg',
+        'pdc-real': './public/assets/real_pdc_steel_bit.jpg'
       };
       const samplePath = sampleMap[sampleId];
       if (samplePath && fs.existsSync(samplePath)) {

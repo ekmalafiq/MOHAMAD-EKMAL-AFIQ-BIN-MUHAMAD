@@ -14,6 +14,23 @@ import {
 } from 'lucide-react';
 import { DrillBit } from '../types';
 
+export const MODEL_REAL_PHOTOS: Record<string, string> = {
+  // Direct model matching for uploaded photos
+  'UniForce S616': '/assets/real_pdc_steel_bit.jpg',
+  'UniMatrix M613': '/assets/real_pdc_matrix_bit.jpg',
+  'UniSpeed S519': '/assets/real_pdc_steel_bit.jpg',
+  'UniCone MT-111': '/assets/real_roller_cone_bit.jpg',
+  'UniCone TCI-537': '/assets/real_roller_cone_bit.jpg',
+  'UniEnlarge SHO-1750': '/assets/real_pdc_matrix_bit.jpg',
+  // ID matching
+  'unicron-pdc-s616': '/assets/real_pdc_steel_bit.jpg',
+  'unicron-pdc-m613': '/assets/real_pdc_matrix_bit.jpg',
+  'unicron-pdc-s519': '/assets/real_pdc_steel_bit.jpg',
+  'unicron-rc-mt-sr': '/assets/real_roller_cone_bit.jpg',
+  'unicron-rc-tci-sj': '/assets/real_roller_cone_bit.jpg',
+  'unicron-sho-1750': '/assets/real_pdc_matrix_bit.jpg',
+};
+
 export const REAL_BIT_PHOTOS: Record<string, string> = {
   PDC_STEEL: '/assets/real_pdc_steel_bit.jpg',
   PDC_MATRIX: '/assets/real_pdc_matrix_bit.jpg',
@@ -25,16 +42,45 @@ export const REAL_BIT_PHOTOS: Record<string, string> = {
 export const BIT_3D_IMAGES = REAL_BIT_PHOTOS;
 
 export const getBitRealPicture = (bit: DrillBit): string => {
-  // If bit has an uploaded or custom imageUrl, prioritize it with 100% fidelity
-  if (bit.imageUrl && (bit.imageUrl.startsWith('data:') || bit.imageUrl.startsWith('blob:') || bit.imageUrl.startsWith('http') || bit.isCustomUploaded)) {
-    return bit.imageUrl;
+  // If explicitly cleared or deleted
+  if (bit.imageUrl === '' || bit.imageUrl === 'none' || bit.imageUrl === 'deleted' || (bit as any).isImageDeleted) {
+    return '';
   }
-  if (bit.image3dUrl && (bit.image3dUrl.startsWith('data:') || bit.image3dUrl.startsWith('blob:') || bit.image3dUrl.startsWith('http') || bit.isCustomUploaded)) {
-    return bit.image3dUrl;
+
+  // 1. If bit has a direct image defined on the object (custom upload, data URL, blob, or asset path)
+  if (bit.imageUrl && typeof bit.imageUrl === 'string' && bit.imageUrl.trim() !== '') {
+    const trimmed = bit.imageUrl.trim();
+    // Ignore legacy AI render strings if any
+    if (!trimmed.includes('3d_render') && !trimmed.includes('17911816')) {
+      return trimmed;
+    }
   }
-  if (bit.imageUrl && !bit.imageUrl.includes('3d_render')) return bit.imageUrl;
-  if (bit.image3dUrl && !bit.image3dUrl.includes('3d_render')) return bit.image3dUrl;
-  return REAL_BIT_PHOTOS[bit.type] || REAL_BIT_PHOTOS.PDC_STEEL;
+
+  if (bit.image3dUrl && typeof bit.image3dUrl === 'string' && bit.image3dUrl.trim() !== '') {
+    const trimmed = bit.image3dUrl.trim();
+    if (!trimmed.includes('3d_render') && !trimmed.includes('17911816')) {
+      return trimmed;
+    }
+  }
+
+  // 2. Direct model-specific resolution for catalog models (UniForce S616, UniMatrix M613, UniSpeed S519, HO S516)
+  if (bit.id && MODEL_REAL_PHOTOS[bit.id]) {
+    return MODEL_REAL_PHOTOS[bit.id];
+  }
+  if (bit.model) {
+    for (const [modelKey, photoUrl] of Object.entries(MODEL_REAL_PHOTOS)) {
+      if (bit.model.toLowerCase().includes(modelKey.toLowerCase())) {
+        return photoUrl;
+      }
+    }
+  }
+
+  // 3. Match by tool type
+  if (bit.type && REAL_BIT_PHOTOS[bit.type]) {
+    return REAL_BIT_PHOTOS[bit.type];
+  }
+
+  return '';
 };
 
 export const getBit3DPicture = getBitRealPicture;
@@ -172,18 +218,29 @@ export const BitVisualizer: React.FC<BitVisualizerProps> = ({
         >
           {/* Authentic Photograph: Object-contain with studio backdrop to prevent clipping */}
           <div className="w-full h-full p-2 flex items-center justify-center">
-            <img 
-              src={realPhotoUrl} 
-              alt={`${bit.model} Real Physical Tool`}
-              referrerPolicy="no-referrer"
-              className="w-full h-full object-contain drop-shadow-2xl select-none transition-transform duration-300 group-hover:scale-102"
-            />
+            {realPhotoUrl ? (
+              <img 
+                src={realPhotoUrl} 
+                alt={`${bit.model} Real Physical Tool`}
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  (e.currentTarget as HTMLElement).style.display = 'none';
+                }}
+                className="w-full h-full object-contain drop-shadow-2xl select-none transition-transform duration-300 group-hover:scale-102"
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center text-center p-4 text-slate-400">
+                <Camera className="w-10 h-10 text-slate-600 mb-2" />
+                <span className="text-xs font-semibold text-slate-300">{bit.model}</span>
+                <span className="text-[10px] text-slate-500 mt-0.5">Tiada imej dimuat naik</span>
+              </div>
+            )}
           </div>
 
           {/* Top Left Photographic Authenticity Badge */}
           <div className="absolute top-2.5 left-2.5 flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-950/85 backdrop-blur-xs border border-white/15 text-white text-[10px] font-mono shadow-md">
             <Camera className="w-3 h-3 text-emerald-400" />
-            <span>{isCustomUploadedPhoto ? 'UPLOADED PHOTO' : 'REAL PHOTO'}</span>
+            <span>{isCustomUploadedPhoto ? 'UPLOADED PHOTO' : realPhotoUrl ? 'REAL PHOTO' : 'NO PHOTO'}</span>
           </div>
 
           {/* Top Right Expand Icon */}
@@ -310,12 +367,20 @@ export const BitVisualizer: React.FC<BitVisualizerProps> = ({
           >
             {/* Modal Tool View Header: Full clarity, 100% uncropped */}
             <div className="relative aspect-[16/10] bg-slate-950 flex items-center justify-center p-6">
-              <img 
-                src={realPhotoUrl} 
-                alt={`${bit.model} Inspection`}
-                referrerPolicy="no-referrer"
-                className="w-full h-full object-contain drop-shadow-2xl select-none"
-              />
+              {realPhotoUrl ? (
+                <img 
+                  src={realPhotoUrl} 
+                  alt={`${bit.model} Inspection`}
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-contain drop-shadow-2xl select-none"
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center text-center p-6 text-slate-400">
+                  <Camera className="w-12 h-12 text-slate-600 mb-2" />
+                  <span className="text-sm font-semibold text-slate-200">{bit.model}</span>
+                  <span className="text-xs text-slate-500 mt-1">Tiada imej dimuat naik</span>
+                </div>
+              )}
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-transparent pointer-events-none" />
               
               <div className="absolute top-4 right-4 flex items-center space-x-2">

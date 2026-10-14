@@ -190,7 +190,7 @@ export const CameraPhotoModal: React.FC<CameraPhotoModalProps> = ({
 
   if (!isOpen) return null;
 
-  const displayPhoto = capturedPhoto || targetBit?.imageUrl || targetBit?.image3dUrl || '/src/assets/images/real_pdc_steel_bit_1791528122922.jpg';
+  const displayPhoto = capturedPhoto || targetBit?.imageUrl || targetBit?.image3dUrl || '/assets/real_pdc_steel_bit.jpg';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">

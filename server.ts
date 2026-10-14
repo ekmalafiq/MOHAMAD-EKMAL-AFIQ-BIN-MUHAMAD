@@ -15,6 +15,12 @@ async function startServer() {
   // Mount API routes first
   app.use('/api', apiRouter);
 
+  // Statically serve uploaded bit images and assets directly with correct MIME types
+  const publicPath = path.join(process.cwd(), 'public');
+  const assetsPath = path.join(process.cwd(), 'public', 'assets');
+  app.use('/assets', express.static(assetsPath, { maxAge: '1h' }));
+  app.use(express.static(publicPath));
+
   // Vite middleware for development vs static production serving
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

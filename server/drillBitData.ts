@@ -210,6 +210,36 @@ export const INITIAL_DRILL_BITS: DrillBit[] = [
     unicronCatalogRef: 'UCH-SHO-1750-PILOT',
     imageUrl: '/assets/real_pdc_matrix_bit.jpg',
     image3dUrl: '/assets/real_pdc_matrix_bit.jpg'
+  },
+  {
+    id: 'exigent-sho-s516',
+    model: '8.25 x 12.25 HO S516 (Uploaded Spec Sheet)',
+    manufacturer: 'Exigent Drill Bits',
+    type: 'STAGE_HOLE_OPENER',
+    sizeInch: 12.25,
+    iadcCode: 'S516',
+    bladeCount: 6,
+    cutterSizeMm: 16,
+    bearingType: 'NON_ROLLER',
+    bodyMaterial: 'FORGED_STEEL',
+    hardfacingGrade: 'High-Strength Tungsten Hardfacing Matrix',
+    gaugeLengthInch: 3.0,
+    junkSlotAreaPct: 45,
+    nozzleCount: 6,
+    nozzleSizes32nds: [14, 14, 14, 16, 16, 16],
+    costUsd: 38500,
+    idealFormations: ['Sandstone', 'Shale', 'Limestone', 'Hole Enlargement Interval'],
+    maxWobKlbf: 42,
+    recommendedWobKlbf: [16, 32],
+    recommendedRpm: [70, 140],
+    recommendedFlowGpm: [650, 950],
+    maxTorqueFtLbs: 11500,
+    description: '8.25" x 12.25" Stage Hole Opener (SHO S516) from uploaded technical spec sheet. Heavy duty pilot reaming tool with durable carbide matrix reinforcement.',
+    unicronCatalogRef: 'EXG-SHO-825-1225-S516',
+    imageUrl: undefined,
+    image3dUrl: undefined,
+    isCustomUploaded: true,
+    sourceFileName: '8.25 x12.25 HO S516 Spec Sheet Exigent Drill Bits.pdf'
   }
 ];
 
@@ -268,8 +298,8 @@ export const FORMATION_PRESETS: FormationPreset[] = [
   }
 ];
 
-// All components in bit catalog deleted as requested: initialize empty catalog fleet
-export const DRILL_BITS_CATALOG: DrillBit[] = [];
+// Initialize catalog fleet populated with uploaded authentic drill bit photographs
+export const DRILL_BITS_CATALOG: DrillBit[] = [...INITIAL_DRILL_BITS];
 
 export function addBitToCatalog(bit: DrillBit): DrillBit {
   // Check if bit already exists by id

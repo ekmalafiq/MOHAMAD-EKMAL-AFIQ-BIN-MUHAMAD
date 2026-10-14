@@ -34,6 +34,29 @@ import { EditBitModal } from './EditBitModal';
 import { BitVisualizer } from './BitVisualizer';
 import { UnicronLogo } from './UnicronLogo';
 import { CameraPhotoModal } from './CameraPhotoModal';
+export const UPLOADED_SPECIMEN_OPTIONS = [
+  {
+    name: 'PDC Steel Body',
+    label: 'UniForce Steel PDC (Uploaded Specimen)',
+    type: 'PDC_STEEL',
+    url: '/assets/real_pdc_steel_bit.jpg',
+    desc: 'High-strength steel body with spiral blades & polished PDC cutters'
+  },
+  {
+    name: 'PDC Matrix Body',
+    label: 'UniMatrix Matrix PDC (Uploaded Specimen)',
+    type: 'PDC_MATRIX',
+    url: '/assets/real_pdc_matrix_bit.jpg',
+    desc: 'Infiltrated tungsten carbide matrix body with high abrasion resistance'
+  },
+  {
+    name: 'Roller Cone TCI / Milled',
+    label: 'UniCone Tri-Cone (Uploaded Specimen)',
+    type: 'ROLLER_CONE_TCI',
+    url: '/assets/real_roller_cone_bit.jpg',
+    desc: 'Tri-cone sealed bearing structure with durable tooth layout'
+  }
+];
 
 interface CatalogTabProps {
   catalog: DrillBit[];
@@ -130,6 +153,40 @@ export const CatalogTab: React.FC<CatalogTabProps> = ({
       });
     });
     setSaveSuccessMsg(`Applied uploaded file image across all ${catalog.length} drill bits in the catalog!`);
+    setTimeout(() => setSaveSuccessMsg(null), 5000);
+  };
+
+  const handleSetBitPresetImage = (targetBit: DrillBit, presetUrl: string, presetName: string) => {
+    const updatedBit: DrillBit = {
+      ...targetBit,
+      imageUrl: presetUrl,
+      image3dUrl: presetUrl,
+      isCustomUploaded: true,
+      sourceFileName: presetName
+    };
+    if (onUpdateBit) {
+      onUpdateBit(updatedBit);
+    }
+    setDetectedUploadedImage(presetUrl);
+    setUploadedImageFileName(presetName);
+    setSaveSuccessMsg(`Gambar untuk "${targetBit.model}" dikemas kini ke fail "${presetName}"!`);
+    setTimeout(() => setSaveSuccessMsg(null), 5000);
+  };
+
+  const handleApplyPresetToAll = (presetUrl: string, presetName: string) => {
+    if (!onUpdateBit) return;
+    catalog.forEach(b => {
+      onUpdateBit({
+        ...b,
+        imageUrl: presetUrl,
+        image3dUrl: presetUrl,
+        isCustomUploaded: true,
+        sourceFileName: presetName
+      });
+    });
+    setDetectedUploadedImage(presetUrl);
+    setUploadedImageFileName(presetName);
+    setSaveSuccessMsg(`Gambar fail "${presetName}" telah diaplikasikan kepada semua ${catalog.length} drill bit dalam katalog!`);
     setTimeout(() => setSaveSuccessMsg(null), 5000);
   };
 
@@ -596,6 +653,8 @@ export const CatalogTab: React.FC<CatalogTabProps> = ({
           </div>
         </div>
 
+
+
         {isUploadingAiFile && (
           <div className="p-3 bg-sky-50 border border-sky-200 rounded-xl flex items-center space-x-2 text-xs text-sky-800 font-mono">
             <RotateCw className="w-4 h-4 animate-spin text-sky-600" />
@@ -925,6 +984,60 @@ export const CatalogTab: React.FC<CatalogTabProps> = ({
                       <Camera className="w-3.5 h-3.5 text-emerald-600" />
                       <span>Camera</span>
                     </button>
+
+                    {onUpdateBit && (bit.imageUrl || bit.isCustomUploaded) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onUpdateBit({
+                            ...bit,
+                            imageUrl: '',
+                            image3dUrl: '',
+                            isCustomUploaded: false
+                          });
+                          setSaveSuccessMsg(`Gambar sebenar untuk "${bit.model}" telah dipadam.`);
+                          setTimeout(() => setSaveSuccessMsg(null), 4000);
+                        }}
+                        className="py-1.5 px-2 bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-950/70 dark:text-rose-300 rounded-lg text-[10px] font-bold flex items-center gap-1 border border-rose-200 dark:border-rose-800 transition cursor-pointer shadow-2xs"
+                        title="Padam gambar sebenar dari fail muat naik untuk kad ini"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                        <span>Padam</span>
+                      </button>
+                    )}
+
+                    {/* Quick photo presets from uploaded files */}
+                    {onUpdateBit && (
+                      <div className="w-full flex items-center justify-between gap-1 pt-1.5 border-t border-slate-200/60 dark:border-slate-800">
+                        <span className="text-[9px] text-slate-500 font-medium">Quick Photo:</span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleSetBitPresetImage(bit, '/assets/real_pdc_steel_bit.jpg', 'PDC Steel')}
+                            className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition cursor-pointer"
+                            title="Tukar ke Foto Sebenar PDC Steel"
+                          >
+                            PDC Steel
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSetBitPresetImage(bit, '/assets/real_pdc_matrix_bit.jpg', 'PDC Matrix')}
+                            className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 transition cursor-pointer"
+                            title="Tukar ke Foto Sebenar PDC Matrix"
+                          >
+                            PDC Matrix
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSetBitPresetImage(bit, '/assets/real_roller_cone_bit.jpg', 'Roller Cone')}
+                            className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 transition cursor-pointer"
+                            title="Tukar ke Foto Sebenar Roller Cone"
+                          >
+                            Roller Cone
+                          </button>
+                        </div>
+                      </div>
+                    )}
 
                     {detectedUploadedImage && onUpdateBit && (
                       <button
