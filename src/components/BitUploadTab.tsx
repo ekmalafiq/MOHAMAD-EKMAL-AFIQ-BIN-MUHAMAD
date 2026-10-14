@@ -25,7 +25,11 @@ import {
   Info,
   SlidersHorizontal,
   FileCheck2,
-  RefreshCw
+  RefreshCw,
+  Eye,
+  Copy,
+  Box,
+  Gauge
 } from 'lucide-react';
 import { DrillBit } from '../types';
 import { BitVisualizer } from './BitVisualizer';
@@ -69,6 +73,81 @@ export const BitUploadTab: React.FC<BitUploadTabProps> = ({
   // Search & filter for uploaded inventory
   const [searchFilter, setSearchFilter] = useState<string>('');
   const [typeFilter, setTypeFilter] = useState<string>('ALL');
+
+  // Full File Information Inspection Modal & Search
+  const [selectedBitForFullInfo, setSelectedBitForFullInfo] = useState<DrillBit | null>(null);
+  const [fullInfoFilterCategory, setFullInfoFilterCategory] = useState<string>('ALL');
+  const [fullInfoSearch, setFullInfoSearch] = useState<string>('');
+  const [copiedDataToast, setCopiedDataToast] = useState<boolean>(false);
+
+  // Helper to construct a comprehensive list of all technical data points from uploaded file
+  const getFullBitParameters = (bit: DrillBit) => {
+    const list: { category: string; parameter: string; value: string }[] = [];
+
+    // Document & Source File Info
+    list.push({ category: 'DOCUMENT', parameter: 'Source File Name', value: bit.sourceFileName || 'Uploaded Technical Spec' });
+    list.push({ category: 'DOCUMENT', parameter: 'Upload Timestamp', value: bit.uploadedAt ? new Date(bit.uploadedAt).toLocaleString() : 'Recent Upload' });
+    list.push({ category: 'DOCUMENT', parameter: 'Extraction Method', value: bit.rawAiSummary ? 'Gemini 2.5 Flash Multimodal Vision' : 'Direct Technical Spec Ingestion' });
+    list.push({ category: 'DOCUMENT', parameter: 'Photo Extraction', value: bit.imageUrl && (bit.imageUrl.startsWith('data:') || bit.isCustomUploaded) ? 'Extracted from Uploaded File' : 'Standard Catalog Reference Photo' });
+
+    // General Tool Identification
+    list.push({ category: 'GENERAL', parameter: 'Tool Model Name', value: bit.model });
+    list.push({ category: 'GENERAL', parameter: 'Manufacturer / Vendor', value: bit.manufacturer });
+    list.push({ category: 'GENERAL', parameter: 'Bit Diameter (Size)', value: `${bit.sizeInch}" (${(bit.sizeInch * 25.4).toFixed(1)} mm)` });
+    list.push({ category: 'GENERAL', parameter: 'IADC Classification', value: bit.iadcCode });
+    list.push({ category: 'GENERAL', parameter: 'Tool Category', value: bit.type.replace(/_/g, ' ') });
+    if (bit.serialNumber) list.push({ category: 'GENERAL', parameter: 'Tool Serial Number', value: bit.serialNumber });
+    if (bit.unicronCatalogRef) list.push({ category: 'GENERAL', parameter: 'Catalog Reference ID', value: bit.unicronCatalogRef });
+    list.push({ category: 'GENERAL', parameter: 'Estimated Tool Cost', value: `$${(Number(bit.costUsd) || 28000).toLocaleString()} USD` });
+
+    // Cutting Structure
+    list.push({ category: 'CUTTING_STRUCTURE', parameter: 'Blade / Cone Count', value: `${bit.bladeCount || 6} Primary Blades` });
+    list.push({ category: 'CUTTING_STRUCTURE', parameter: 'Primary Cutter Size', value: `${bit.cutterSizeMm || 16} mm Polished PDC / Insert` });
+    if (bit.cutterCountTotal) list.push({ category: 'CUTTING_STRUCTURE', parameter: 'Total Cutter Count', value: `${bit.cutterCountTotal} Cutters` });
+    if (bit.faceProfile) list.push({ category: 'CUTTING_STRUCTURE', parameter: 'Face Profile', value: bit.faceProfile });
+    list.push({ category: 'CUTTING_STRUCTURE', parameter: 'Gauge Pad Length', value: `${bit.gaugeLengthInch || 2.25} inches` });
+    if (bit.connectionType) list.push({ category: 'CUTTING_STRUCTURE', parameter: 'API Connection Pin', value: bit.connectionType });
+
+    // Metallurgy & Materials
+    list.push({ category: 'METALLURGY', parameter: 'Body Metallurgy', value: bit.bodyMaterial.replace(/_/g, ' ') });
+    list.push({ category: 'METALLURGY', parameter: 'Hardfacing / Clad Grade', value: bit.hardfacingGrade || 'Tungsten Carbide Overlay' });
+    list.push({ category: 'METALLURGY', parameter: 'Bearing & Seal System', value: bit.bearingType ? bit.bearingType.replace(/_/g, ' ') : 'Fixed Cutter Non-Roller' });
+
+    // Hydraulics & Nozzles
+    const tfa = Array.isArray(bit.nozzleSizes32nds) && bit.nozzleSizes32nds.length > 0
+      ? bit.nozzleSizes32nds.reduce((sum, n) => sum + (Math.PI * Math.pow(n / 64, 2)), 0)
+      : (bit.hydraulicsTfaSqIn || 0.65);
+    list.push({ category: 'HYDRAULICS', parameter: 'Nozzle Port Count', value: `${bit.nozzleCount || (bit.nozzleSizes32nds ? bit.nozzleSizes32nds.length : 6)} Interchangeable Nozzles` });
+    list.push({ category: 'HYDRAULICS', parameter: 'Installed Nozzle Sizes (32nds)', value: bit.nozzleSizes32nds && bit.nozzleSizes32nds.length > 0 ? bit.nozzleSizes32nds.map(n => `${n}/32"`).join(', ') : 'Standard Config' });
+    list.push({ category: 'HYDRAULICS', parameter: 'Total Flow Area (TFA)', value: `${tfa.toFixed(3)} sq in` });
+    list.push({ category: 'HYDRAULICS', parameter: 'Junk Slot Area (JSA)', value: `${bit.junkSlotAreaPct || 40}% Cross-Sectional Area` });
+    list.push({ category: 'HYDRAULICS', parameter: 'Circulation Flow Rate', value: `${bit.recommendedFlowGpm?.[0] || 450} - ${bit.recommendedFlowGpm?.[1] || 600} GPM` });
+
+    // Operating Limits & SPE Drilling Window
+    list.push({ category: 'OPERATING_LIMITS', parameter: 'Recommended WOB Range', value: `${bit.recommendedWobKlbf?.[0] || 16} - ${bit.recommendedWobKlbf?.[1] || 30} klbf` });
+    list.push({ category: 'OPERATING_LIMITS', parameter: 'Max Permissible WOB', value: `${bit.maxWobKlbf || 35} klbf` });
+    list.push({ category: 'OPERATING_LIMITS', parameter: 'Recommended Rotary Speed', value: `${bit.recommendedRpm?.[0] || 110} - ${bit.recommendedRpm?.[1] || 160} RPM` });
+    list.push({ category: 'OPERATING_LIMITS', parameter: 'Maximum Make-up Torque', value: `${(bit.maxTorqueFtLbs || 12500).toLocaleString()} ft-lbs` });
+
+    // Formation Suitability
+    list.push({ category: 'FORMATION', parameter: 'Recommended Rock Formations', value: Array.isArray(bit.idealFormations) ? bit.idealFormations.join(', ') : 'Interbedded Sandstone, Shale' });
+
+    // Dynamic extracted key-value pairs from AI
+    if (Array.isArray(bit.allExtractedData)) {
+      bit.allExtractedData.forEach(item => {
+        const alreadyExists = list.some(p => p.parameter.toLowerCase() === item.key.toLowerCase());
+        if (!alreadyExists && item.key && item.value) {
+          list.push({
+            category: item.category || 'GENERAL',
+            parameter: item.key,
+            value: item.value
+          });
+        }
+      });
+    }
+
+    return list;
+  };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -1130,14 +1209,14 @@ export const BitUploadTab: React.FC<BitUploadTabProps> = ({
                       {bit.imageUrl && (bit.imageUrl.startsWith('data:') || bit.isCustomUploaded) && (
                         <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-600 text-white text-[10px] font-bold shadow-md">
                           <CheckCircle2 className="w-3 h-3 text-white" />
-                          <span>Gambar Dari Fail Upload</span>
+                          <span>Photo from Uploaded File</span>
                         </div>
                       )}
                     </div>
 
                     <div className="text-center w-full">
                       <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400 block truncate">
-                        Sumber Fail: <strong>{bit.sourceFileName || 'Fail Drill Bit Dimuat Naik'}</strong>
+                        Source File: <strong>{bit.sourceFileName || 'Uploaded Drill Bit File'}</strong>
                       </span>
                     </div>
 
@@ -1145,7 +1224,7 @@ export const BitUploadTab: React.FC<BitUploadTabProps> = ({
                     <div className="w-full flex flex-col gap-1.5 text-xs">
                       <label className="flex items-center justify-center space-x-1.5 px-3 py-2 bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900 border border-sky-300 dark:border-sky-800 text-sky-700 dark:text-sky-300 rounded-xl font-semibold cursor-pointer transition">
                         <UploadCloud className="w-3.5 h-3.5" />
-                        <span>Pilih / Tukar Gambar Fail</span>
+                        <span>Choose / Replace File Image</span>
                         <input
                           type="file"
                           accept="image/*"
@@ -1169,7 +1248,7 @@ export const BitUploadTab: React.FC<BitUploadTabProps> = ({
 
                       <label className="flex items-center justify-center space-x-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-semibold cursor-pointer transition">
                         <Camera className="w-3.5 h-3.5 text-emerald-500" />
-                        <span>Ambil Foto Rig (Kamera)</span>
+                        <span>Capture Rig Photo (Camera)</span>
                         <input
                           type="file"
                           accept="image/*"
@@ -1470,17 +1549,17 @@ export const BitUploadTab: React.FC<BitUploadTabProps> = ({
                       {bit.imageUrl && (bit.imageUrl.startsWith('data:') || bit.isCustomUploaded) && (
                         <div className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded bg-emerald-600/90 text-white text-[9px] font-bold shadow-xs flex items-center gap-1 backdrop-blur-xs">
                           <CheckCircle2 className="w-2.5 h-2.5" />
-                          <span>Gambar Fail</span>
+                          <span>File Photo</span>
                         </div>
                       )}
 
                       {/* Hover action to replace image with another file */}
                       <label 
                         className="absolute bottom-1.5 right-1.5 px-2 py-1 rounded bg-slate-900/85 hover:bg-sky-600 text-white text-[10px] font-semibold flex items-center gap-1 cursor-pointer transition shadow-md backdrop-blur-xs opacity-90 hover:opacity-100"
-                        title="Tukar gambar drill bit ini dengan gambar dari fail komputer anda"
+                        title="Replace this drill bit image with a photo from your computer"
                       >
                         <Camera className="w-3 h-3 text-emerald-400" />
-                        <span>Tukar Gambar</span>
+                        <span>Change Photo</span>
                         <input
                           type="file"
                           accept="image/*"
